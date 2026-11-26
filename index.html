@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Diamond Weight & Count Checker | KREAN JEWELS</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f6f3ed;color:#272522;font:1rem system-ui,sans-serif}main{max-width:700px;margin:clamp(1rem,5vw,4rem) auto;padding:clamp(1rem,5vw,3rem);background:white;border:1px solid #ded8cd}h1{font:clamp(2rem,5vw,3rem) Georgia,serif;margin:.4rem 0}header p{letter-spacing:.15em;font-size:.8rem}p{line-height:1.6}label{display:block;margin:1rem 0;font-weight:600}input,textarea{display:block;width:100%;padding:.7rem;margin-top:.35rem;border:1px solid #877d71;border-radius:.3rem;font:inherit}button{padding:.7rem 1rem;color:white;background:#352b22;border:0;border-radius:.3rem;font:inherit;cursor:pointer}output{display:block;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:1rem;padding:1rem;background:#f6f3ed}
+</style></head><body><main><header><p>KREAN JEWELS</p><h1>Diamond Weight & Count Checker</h1></header><p>Enter each diamond group as quantity,carats per stone. Include the center stone as a group of one.</p><form><label>Diamond groups (one per line)<textarea name="groups" required rows="5">1,2.00
+20,0.012</textarea></label><label>Declared total carat weight (optional)<input name="declared" type="number" min="0" step="any" placeholder="2.24"></label><button>Check weights</button></form><output aria-live="polite"></output></main>
+<script>
+const form = document.querySelector("form");
+const output = document.querySelector("output");
+function calculate(data) {
+let count = 0, weight = 0;
+for (const line of data.get("groups").trim().split(/\r?\n/).filter(line => line.trim())) {
+  const parts = line.split(",").map(part => part.trim());
+  const [quantity, carats] = parts.map(Number);
+  if (parts.length !== 2 || !Number.isSafeInteger(quantity) || quantity < 1 || !Number.isFinite(carats) || carats <= 0) throw Error("Use a positive whole count and a positive carat weight per stone on each line.");
+  count += quantity;
+  weight += quantity * carats;
+}
+if (!Number.isSafeInteger(count) || !Number.isFinite(weight) || !count) throw Error("Enter diamond groups within the supported range.");
+const declared = data.get("declared");
+const delta = weight - Number(declared);
+return count + " diamonds\n" + weight.toFixed(3) + " CT TW" + (declared === "" ? "" : "\nDifference from declared weight: " + (delta > 0 ? "+" : "") + delta.toFixed(3) + " ct");
+}
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  try {
+    output.textContent = calculate(new FormData(form));
+  } catch (error) {
+    output.textContent = error.message;
+  }
+});
+</script></body></html>
